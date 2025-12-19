@@ -192,9 +192,16 @@
             .card-long-text {
                 margin-right: unset;
             }
-            .card-detail strong {
+            .card-detail strong,
+            summary {
                 font-weight: 500;
                 color: #a0a0a0;
+                cursor: pointer;
+            }
+            details p {
+                font-size: 0.75rem;
+                line-height: 1rem;
+                color: #b488c6;
             }
             .card-values {
                 font-family: sans-serif;
@@ -205,6 +212,7 @@
             font-size: 0.75rem;
             font-family: monospace; */
             }
+            
             .action-button svg {
                 height: var(--action-btn-svg-size);
                 width: var(--action-btn-svg-size);
@@ -403,6 +411,11 @@
                     align-content: center;
                     justify-content: flex-start;
                 }
+                summary {font-size: 1.5rem;}
+                details > p {
+                    font-size: 1.35rem;
+                    line-height: 1.75rem;
+                }
                 .container {
                     width: 100%;
                     max-width: unset;
@@ -445,11 +458,47 @@
                 transform: scale(1.1);
                 transition: all 0.3s ease;
             }
+            
+            .copied {
+                /* background: #228c52; */
+                background-color: #ffa7a7;
+            }
+            #notification-container {
+                display: none;
+                opacity: 0;
+                background-color: #d9d9d985;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 999;
+                transition: opacity 0.3s ease;
+            }
+            .notification-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: #3b3b3b;
+                color: red;
+                padding: 1rem;
+                border-radius: 0.5rem;
+                font-family: monospace;
+                z-index: 99999;
+                text-align: center;
+                /* cursor: none; */
+            }
+            
         </style>
     </head>
     <body>
         <div class="master-div">
                 <!-- Main Content Container -->
+                <div id="notification-container">
+                    <div id="notification-popup" class="notification-popup">Notified!!</div>
+                </div>
+                
                 <div class="container">
                     <!-- Header with Add & Export Buttons -->
                     <header>
@@ -528,15 +577,37 @@
             const dataMap = {
                 mainPhoto: {type: "photo", text: "Photo 1 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
                 Photo2: {type: "photo", text: "Photo 2 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
+                listName: {type: "datalist", text: "List Name (Optional)", filter: true, styling: "main", defaultOptions: "-, My Fav., Ready to Buy, Interested, Others",clickToCopy: true},
+                title: {type: "input", text: "Title (Required)", filter: true,clickToCopy: true},
+                productUrl: {type: "link", text: "Product Link (Required)", filter: false, styling: "main", required: true},
+                type: {type: "datalist", text: "Product Type (Optional)", filter: true, styling: "strong", defaultOptions: "-, Regular Tee, Oversized Tee, Sneakers, Shoes, Cargo, Jacket",clickToCopy: true},
+                website: {type: "datalist", text: "Website (Optional)", filter: true, styling: "main", defaultOptions: "-, The Souled Store, Pronk, Nobero, Silly Punter, Wittee, Kadak Merch, Bewakoof,Be Young, Warrior World, The Banyan Tee, Bronoun, Amazon, Myntra, Flipkart",clickToCopy: true},
+                mrp: {type: "input", text: "Actual Price (Optional)", filter: false, styling: "main",clickToCopy: true},
+                offerPrice: {type: "input", text: "Offer Price (Optional)", filter: true, styling: "strong",isNumeric:true,clickToCopy: true},
+                notes: {type: "input", text: "Notes (Optional)", filter: true, styling: "main",clickToCopy: true}
+            };
+            
+            const sortBy = "timestamp";
+            const sortOrder = "desc";
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /* const collectionName = "My_Fav_Shopping_List_01";
+            const appTitle = "My Fav. Shopping List";
+
+            const dataMap = {
+                mainPhoto: {type: "photo", text: "Photo 1 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
+                Photo2: {type: "photo", text: "Photo 2 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
                 listName: {type: "datalist", text: "List Name (Optional)", filter: true, styling: "main", defaultOptions: "-, My Fav., Ready to Buy, Interested, Others"},
-                title: {type: "input", text: "Title (Required)", filter: true, styling: "main"},
+                title: {type: "input", text: "Title (Required)", filter: true, styling: "main",clickToCopy: true},
                 productUrl: {type: "link", text: "Product Link (Required)", filter: false, styling: "main", required: true},
                 type: {type: "datalist", text: "Product Type (Optional)", filter: true, styling: "strong", defaultOptions: "-, Regular Tee, Oversized Tee, Sneakers, Shoes, Cargo, Jacket"},
                 website: {type: "datalist", text: "Website (Optional)", filter: true, styling: "main", defaultOptions: "-, The Souled Store, Pronk, Nobero, Silly Punter, Wittee, Kadak Merch, Bewakoof,Be Young, Warrior World, The Banyan Tee, Bronoun, Amazon, Myntra, Flipkart"},
                 mrp: {type: "input", text: "Actual Price (Optional)", filter: false, styling: "main"},
-                offerPrice: {type: "input", text: "Offer Price (Optional)", filter: true, styling: "strong"},
-                notes: {type: "input", text: "Notes (Optional)", filter: true, styling: "main"}
+                offerPrice: {type: "input", text: "Offer Price (Optional)", filter: true, styling: "strong", isNumeric:true},
+                notes: {type: "input", text: "Notes (Optional)", filter: true, styling: "main",clickToCopy: true}
             };
+             */
 
             console.log("Collection Name: " + collectionName);
             const prefixCountText = "No. of Entries:";
@@ -586,6 +657,8 @@
             const searchInput = document.getElementById("searchBar");
             let visibleEntriesCount = 0; // To Track total no. of entries in the database
             const countText = document.getElementById("count-text");
+            const notificationContainer = document.getElementById("notification-container");
+            const notificationPopup = document.getElementById("notification-popup");
             let editingPhotoOGBase64 = {};
 
             //----Helper Functions---Generalised Code--------------//////////////
@@ -644,11 +717,6 @@
                         });
                     }
                 });
-
-                // Mark last element hasComma = false
-                /*  if (result.length > 0) {
-                    result[result.length - 1].hasComma = false;
-                } */
 
                 return result;
             }
@@ -775,6 +843,45 @@
                 });
             }
 
+            // Copy to clipboard helper with feedback
+            function addCopyClick(element) {
+                if (element !== null) {
+
+                    element.style.cursor = "pointer";
+                    element.title = "Click to copy";
+                    const notificationText = "Copied To Clipboard!"
+                    element.onclick = () => {
+                        navigator.clipboard
+                            .writeText(element.textContent)
+                            .then(() => {
+                                activatePopupNotification(notificationText,element,500);
+                                
+                            });
+                    };
+                }
+            }
+
+            function activatePopupNotification (notificationText = "Notified!!!", extraElement = null,timeOut = 500){
+                notificationPopup.textContent = notificationText;
+                notificationContainer.style.display = "block";
+                notificationContainer.style.opacity = "100%";
+                if (extraElement != null) {
+                    extraElement.classList.add("copied");
+                }
+                setTimeout(
+                    () => {
+                        notificationContainer.style.opacity = "0";
+                        notificationContainer.style.display = "none";
+                        if (extraElement != null) {
+                            extraElement.classList.remove("copied");
+                        }
+                    },
+                    timeOut
+                );
+                
+
+            }
+
             /////////////////////////////////////////////////////////////////////
 
             window.onload = function () {
@@ -794,7 +901,7 @@
                     populateMenuOptions();
                     // Adds Event Listerners to Datalist Inputs in Add/Edit Modal Form
                     addEvtListenerToAddNewOptions();
-                    const query = db.collection(collectionName).orderBy("timestamp", "desc");
+                    const query = db.collection(collectionName).orderBy(sortBy, sortOrder);
                     query.onSnapshot(
                         (snapshot) => {
                             allDocs = snapshot.docs.filter((doc) => doc.id !== "menuOptions");
@@ -834,8 +941,10 @@
                 const docId = confirmDeleteBtn.dataset.id;
                 try {
                     await db.collection(collectionName).doc(docId).delete();
-                    showInfoModal("Entry deleted successfully!");
+                    // showInfoModal("Entry deleted successfully!");
                     hideModal(deleteModal);
+                    const notificationMessage = "Entry Deleted successfully!";
+                    activatePopupNotification(notificationMessage, undefined, 500);
                     //visibleEntriesCount--;
                     updateCountText();
                 } catch (error) {
@@ -854,7 +963,7 @@
                 renderDocs(searchTerm);
             });
 
-            function populateAddEditPanel(docId = "docId") {
+            /* function populateAddEditPanel(docId = "docId") {
                 let formInnerHtml = `<input type="hidden" id="${docId}">\n`;
                 Object.keys(dataMap).forEach((key) => {
                     const config = dataMap[key];
@@ -890,8 +999,6 @@
                             </datalist>
                         </div>`;
                         //console.log(optionsHtml);
-
-                        /* formInnerHtml += ` ${data[key] || ""}`; */
                     }
                     if (config.type === "photo"){
                         formInnerHtml += `
@@ -916,7 +1023,7 @@
                 //console.log(formInnerHtml);
                 // Cancel Add/Edit
                 //cancelAddEditBtn.addEventListener('click', () => hideModal(addEditModal));
-            }
+            } */
 
             // Function to populate datalist elements from a Firestore document
             async function populateMenuOptions() {
@@ -1014,7 +1121,7 @@
                         // console.log(optionsHTML); // For Debugging
                         modalFormInnerHTML += `   <div class="form-group">
                             <label for="${key}">${config.text}</label>
-                            <select id="${key}">
+                            <select id="${key}" ${config.required ? "required" : ""}>
                                 ${optionsHTML}
                             </select>
                         </div>\n`;
@@ -1022,7 +1129,7 @@
                         // console.log("Datalist Element Created.."); // For Debugging
                         modalFormInnerHTML += `   <div class="form-group">
                             <label for="${key}">${config.text}</label>
-                            <input type="text" id="${key}" list="${key}List" class="datalist-type" enterkeyhint="done">
+                            <input type="text" id="${key}" list="${key}List" class="datalist-type" enterkeyhint="done" ${config.required ? "required" : ""}>
                             <datalist id="${key}List"></datalist>
                         </div>\n`;
                     }else if (config.type === "photo") {
@@ -1031,8 +1138,21 @@
                             <input
                                 type="file"
                                 id="${key}"
-                                accept="image/png,image/jpeg,image/webp"/>
+                                accept="image/png,image/jpeg,image/webp"/
+                                ${config.required ? "required" : ""}>
+                                
                             </div>\n`;
+                    }else if (config.type === "dropText" && dataMap[key]) {
+                        modalFormInnerHTML +=
+                        `   <div class="form-group">
+                                <label for="${key}">${config.text}</label>
+                                <input type="text" id="${key}" ${config.required ? "required" : ""}>
+                            </div>\n`;
+                    }else if (config.type === "number" && dataMap[key]) {
+                        modalFormInnerHTML += `   <div class="form-group">
+                            <label for="${key}">${config.text}</label>
+                            <input type="number" step="1" id="${key}" value="0" min=${config.min} max=${config.max} inputmode="numeric" />
+                        </div>\n`;
                     }
                 });
                 modalFormInnerHTML += `   <div class="modal-buttons">
@@ -1056,7 +1176,7 @@
                 if (dataMap.title) {
                     cardTitle = `
                         <div class="card-title">
-                            <h3 class="highlight-green">${data.title || '-'}</h3>
+                            <h3 id="title" class="highlight-green">${data.title || '-'}</h3>
                         </div>
                     `;
                 }
@@ -1067,7 +1187,7 @@
                     if (config.type === "link" && data[key]) {
                         // You can customize SVG/icon as needed per type/link
                         cardButtons += `<a href="${data[key]}" target="_blank" class="action-button">${mapLinkSvg}</a>`;
-                    }else if (config.type === "photo" && data[key]) {
+                    }else if (config.type === "photo" && data[key] && data[key] != "") {
                         if(config.mode === "display"){
                             const img = new Image();
                             img.src = data[key];
@@ -1080,10 +1200,18 @@
                             }
                         }else if (config.mode === "download"){
                             console.log("Add Logic For Download here...");
-                        }else {console.log("photo mode vaue is invalid!")}
+                        }else {console.log("photo mode value is invalid!")}
                         
                         
-                    }
+                    }/* else if (config.type === "dropText" && data[key]) {
+                        cardDetails += `
+                        <details>
+                            <summary>${config.text}</summary>
+                            <p  id="${key}">${data[key]}</p>
+                        </details>
+
+                        `;
+                    } */
                 });
 
                 // Edit/delete buttons (always present)
@@ -1095,19 +1223,27 @@
                 // Details
                 Object.keys(dataMap).forEach(key => {
                     const config = dataMap[key];
-                    if (key !== "title" && config.type !== "link" && config.type !== "photo") {
+                    if (key !== "title" && config.type !== "link" && config.type !== "photo" && config.type !== "dropText") {
                         // Generate label with fallback value
                         let value = data[key] || '-';
                         let line = "";
                         if (config.styling === "strong") {
-                            line = `<p class="card-detail"><strong>${config.text}:</strong> <span class="highlight-green card-values"> &nbsp;${value}</span></p>`;
+                            line = `<p class="card-detail"><strong>${config.text}:</strong> <span class="highlight-green card-values" id="${key}"> &nbsp;${value}</span></p>`;
                             //console.log("this block"); // For Debugging
                         }else {
-                            line = `<p class="card-detail"><strong>${config.text}:</strong><span class="card-values"> &nbsp;${value}</span></p>`;
+                            line = `<p class="card-detail"><strong>${config.text}:</strong><span class="card-values" id="${key}"> &nbsp;${value}</span></p>`;
                         }
-                        
-                        
                         cardDetails += line;
+                    }else if (config.type === "dropText" && data[key]) {
+                        cardDetails += `
+                        <div class="card-detail">
+                            <details>
+                                <summary>${config.text}</summary>
+                                <p  id="${key}">${data[key]}</p>
+                            </details>
+                        </div>
+
+                        `;
                     }
                 });
 
@@ -1131,6 +1267,17 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = dynamicallyRenderCards(data, doc, dataMap);
+                Object.keys(data).forEach(key => {
+                    
+                    if (key !== "timestamp") {
+                        if (dataMap[key].clickToCopy) {
+                            // console.log("Key: "+key);
+                            const clickElement = card.querySelector(`#${key}`);
+                            // console.log(clickElement);
+                            addCopyClick(clickElement);
+                        }
+                    }
+                });
                 return card;
             }
 
@@ -1144,7 +1291,7 @@
 
                     if (keywordObjs.length === 0) return true;
 
-                    return keywordObjs.every(({ word, endsWithSpace }) => {
+                    /* return keywordObjs.every(({ word, endsWithSpace }) => {
                         let regex;
 
                         // Use whole word match if endsWithSpace, else prefix match
@@ -1163,6 +1310,70 @@
 
                         return regex.test(searchableText);
                     });
+                     */
+                    return keywordObjs.every(({ word, endsWithSpace }) => {
+                        // Regex to detect numeric comparison query like ">550" or "<600"
+                        const numericMatch = word.match(/^([<>])(\d+)$/);
+                        
+                        if (numericMatch) {
+                            const operator = numericMatch[1];
+                            const numValue = Number(numericMatch[2]);
+                            
+                            // Check numeric fields for any matching number by operator
+                            /* return Object.keys(dataMap).some(key => {
+                                if (dataMap[key].isNumeric) {  // Identify numeric fields
+                                    const fieldVal = Number(data[key]);
+                                    if (isNaN(fieldVal)) return false;
+                                    if (operator === '>' && fieldVal > numValue) return true;
+                                    if (operator === '<' && fieldVal < numValue) return true;
+                                }
+                                return false;
+                            }); */
+
+                            // Check numeric fields for any matching number by operator
+                            return Object.keys(dataMap).some(key => {
+                                if (dataMap[key].isNumeric) { // Identify numeric fields
+                                    const rawVal = data[key];
+                                    if (rawVal == null) return false;
+
+                                    // Extract all numeric substrings (including decimals, negatives)
+                                    const matches = String(rawVal).match(/-?\d+(\.\d+)?/g);
+                                    if (!matches) return false;
+
+                                    // Check if any extracted number satisfies the condition
+                                    return matches.some(numStr => {
+                                        const fieldVal = parseFloat(numStr);
+                                        if (operator === '>' && fieldVal > numValue) {
+                                            /* console.log(`*********\n data[key]= ${rawVal}\n Match= ${fieldVal}\n*********\n`); //For Debugging */
+                                            return true;
+                                        }
+                                        if (operator === '<' && fieldVal < numValue) {
+                                            /* console.log(`#########\n data[key]= ${rawVal}\n Match= ${fieldVal}\n#########\n`); //For Debugging */
+                                            return true;
+                                        }
+                                        return false;
+                                    });
+                                }
+                                return false;
+                            });
+
+                        }
+
+                        // Fallback to your existing regex matching for string search keywords
+                        const regex = endsWithSpace 
+                            ? new RegExp(`\\b${escapeRegex(word)}\\b`, 'i') 
+                            : new RegExp(`\\b${escapeRegex(word)}`, 'i');
+
+                        let searchableText = '';
+                        Object.keys(dataMap).forEach(key => {
+                            if (!dataMap[key].isNumeric && dataMap[key].filter === true) {
+                                searchableText += ` ${data[key] || ''}`;
+                            }
+                        });
+
+                        return regex.test(searchableText);
+                    });
+
                 });
 
                 visibleEntriesCount = 0;
@@ -1202,7 +1413,8 @@
                                     //console.log("photo data");
                                     return;
                                 }else {
-                                    document.getElementById(`${key}`).value = data[key] || '';
+                                    // document.getElementById(`${key}`).value = data[key] || ''; // Old Code v_2.6
+                                    wishlistForm.querySelector(`#${key}`).value = data[key] || '';
                                 }
                                 
                             });
@@ -1218,6 +1430,7 @@
                 if (deleteBtn) {
                     const docId = deleteBtn.dataset.id;
                     console.log(docId); // For Debugging
+                    hideModal(addEditModal);
                     showModal(deleteModal);
                     confirmDeleteBtn.dataset.id = docId;
                     
@@ -1232,7 +1445,8 @@
                 let data = {};
                 /* Object.keys(dataMap).forEach(async key => {....}); Old Code Block....*/ 
                 for (const key of Object.keys(dataMap)) {
-                    const element = document.getElementById(key);
+                    // const element = document.getElementById(key); // Old Code v_2.6
+                    const element = wishlistForm.querySelector(`#${key}`);
                     // console.log(element); // For Debugging
                     if (element) {
                         const rawValue = element.value.trim();
@@ -1260,9 +1474,20 @@
                                 }else {
                                     console.log("photoFile is EMPTY");
                                     // data[key] = editingPhotoOGBase64[key]; //This code is not needed
+                                    if (typeof data[key] === 'undefined') {
+                                        data[key] = "";
+                                    }
                                 }
+                                //console.log(data[key]); // For Debugging
                             } else {
-                                data[key] = capitalizeEachWord(rawValue);
+                                if (dataMap[key].capitalize === true){
+                                    /* console.log("capitalize is Ture"); //For Debugging */
+                                    data[key] = capitalizeEachWord(rawValue);
+
+                                }else {
+                                    /* console.log("capitalize is False"); //For Debugging */
+                                    data[key] = rawValue;
+                                }
                             }
                         
                     } else {
@@ -1272,16 +1497,20 @@
                 // Add timestamp as the last key
                 data.timestamp = Date.now();
                 // console.log(data); // For Debugging
+                const notificationTimeout = 1000;
 
                 try {
                     if (docId) {
                         await db.collection(collectionName).doc(docId).update(data);
-                        showInfoModal("Entry updated successfully!");
+                        // showInfoModal("Entry updated successfully!");
+                        const notificationMessage = "Entry updated successfully!";
+                        activatePopupNotification(notificationMessage, undefined, notificationTimeout);
                     } else {
                         await db.collection(collectionName).add(data);
-                        console.log(data);
-                        console.log("New entry added successfully!");
-                        showInfoModal("New entry added successfully!");
+                        //console.log(data); // For Debugging
+                        const notificationMessage ="New entry added successfully!";
+                        activatePopupNotification(notificationMessage, undefined, notificationTimeout);
+                        // showInfoModal("New entry added successfully!");
                         //visibleEntriesCount ++;
                         updateCountText();
                     }
