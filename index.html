@@ -575,39 +575,22 @@
             const appTitle = "My Fav. Shopping List";
 
             const dataMap = {
-                mainPhoto: {type: "photo", text: "Photo 1 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
-                Photo2: {type: "photo", text: "Photo 2 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
-                listName: {type: "datalist", text: "List Name (Optional)", filter: true, styling: "main", defaultOptions: "-, My Fav., Ready to Buy, Interested, Others",clickToCopy: true},
+                mainPhoto: {type: "photo", text: "Photo 1 (Optional)", mode: "display", height: "300"},
+                Photo2: {type: "photo", text: "Photo 2 (Optional)", mode: "display", height: "300"},
+                listName: {type: "datalist", text: "List Name (Optional)", filter: true, defaultOptions: "-, My Fav., Ready to Buy, Interested, Others",clickToCopy: true},
                 title: {type: "input", text: "Title (Required)", filter: true,clickToCopy: true},
-                productUrl: {type: "link", text: "Product Link (Required)", filter: false, styling: "main", required: true},
+                productUrl: {type: "link", text: "Product Link (Required)", required: true},
                 type: {type: "datalist", text: "Product Type (Optional)", filter: true, styling: "strong", defaultOptions: "-, Regular Tee, Oversized Tee, Sneakers, Shoes, Cargo, Jacket",clickToCopy: true},
-                website: {type: "datalist", text: "Website (Optional)", filter: true, styling: "main", defaultOptions: "-, The Souled Store, Pronk, Nobero, Silly Punter, Wittee, Kadak Merch, Bewakoof,Be Young, Warrior World, The Banyan Tee, Bronoun, Amazon, Myntra, Flipkart",clickToCopy: true},
-                mrp: {type: "input", text: "Actual Price (Optional)", filter: false, styling: "main",clickToCopy: true},
+                website: {type: "datalist", text: "Website (Optional)", filter: true, defaultOptions: "-, The Souled Store, Pronk, Nobero, Silly Punter, Wittee, Kadak Merch, Bewakoof,Be Young, Warrior World, The Banyan Tee, Bronoun, Amazon, Myntra, Flipkart",clickToCopy: true},
+                mrp: {type: "input", text: "Actual Price (Optional)",clickToCopy: true},
                 offerPrice: {type: "input", text: "Offer Price (Optional)", filter: true, styling: "strong",isNumeric:true,clickToCopy: true},
-                notes: {type: "input", text: "Notes (Optional)", filter: true, styling: "main",clickToCopy: true}
+                notes: {type: "input", text: "Notes (Optional)", filter: true,clickToCopy: true}
             };
             
             const sortBy = "timestamp";
             const sortOrder = "desc";
 
         ////////////////////////////////////////////////////////////////////////////////////////////////
-
-            /* const collectionName = "My_Fav_Shopping_List_01";
-            const appTitle = "My Fav. Shopping List";
-
-            const dataMap = {
-                mainPhoto: {type: "photo", text: "Photo 1 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
-                Photo2: {type: "photo", text: "Photo 2 (Optional)", filter: false, styling: "main", mode: "display", height: "300"},
-                listName: {type: "datalist", text: "List Name (Optional)", filter: true, styling: "main", defaultOptions: "-, My Fav., Ready to Buy, Interested, Others"},
-                title: {type: "input", text: "Title (Required)", filter: true, styling: "main",clickToCopy: true},
-                productUrl: {type: "link", text: "Product Link (Required)", filter: false, styling: "main", required: true},
-                type: {type: "datalist", text: "Product Type (Optional)", filter: true, styling: "strong", defaultOptions: "-, Regular Tee, Oversized Tee, Sneakers, Shoes, Cargo, Jacket"},
-                website: {type: "datalist", text: "Website (Optional)", filter: true, styling: "main", defaultOptions: "-, The Souled Store, Pronk, Nobero, Silly Punter, Wittee, Kadak Merch, Bewakoof,Be Young, Warrior World, The Banyan Tee, Bronoun, Amazon, Myntra, Flipkart"},
-                mrp: {type: "input", text: "Actual Price (Optional)", filter: false, styling: "main"},
-                offerPrice: {type: "input", text: "Offer Price (Optional)", filter: true, styling: "strong", isNumeric:true},
-                notes: {type: "input", text: "Notes (Optional)", filter: true, styling: "main",clickToCopy: true}
-            };
-             */
 
             console.log("Collection Name: " + collectionName);
             const prefixCountText = "No. of Entries:";
@@ -963,68 +946,6 @@
                 renderDocs(searchTerm);
             });
 
-            /* function populateAddEditPanel(docId = "docId") {
-                let formInnerHtml = `<input type="hidden" id="${docId}">\n`;
-                Object.keys(dataMap).forEach((key) => {
-                    const config = dataMap[key];
-                    if (config.type === "input") {
-                        formInnerHtml += `
-                        <div class="form-group">
-                            <label for="${key}">${config.text}</label>
-                            <input type="text" id="${key}">
-                        </div>\n`;
-                    }
-                    if (config.type === "link") {
-                        formInnerHtml += `
-                        <div class="form-group">
-                            <label for="${key}">${config.text}</label>
-                            <input type="url" id="${key}">
-                        </div>\n`;
-                    }
-                    if (config.type === "datalist" || config.type === "select") {
-                        let options = config.defaultOptions.split(",").map((s) => s.trim());
-                        //console.log(options);
-                        let optionsHtml = "";
-                        options.forEach((option) => {
-                            //console.log(option);
-                            optionsHtml += `
-                            <option value="${option}">${option}</option>\n`;
-                        });
-                        formInnerHtml += `
-                        <div class="form-group">
-                            <label for="${key}">${config.text}</label>
-                            <input type="text" id="${key}" list="${key}List" class="datalist-type" enterkeyhint="done">
-                            <datalist id="${key}List">
-                                ${optionsHtml}
-                            </datalist>
-                        </div>`;
-                        //console.log(optionsHtml);
-                    }
-                    if (config.type === "photo"){
-                        formInnerHtml += `
-                        <div class="form-group">
-                            <label for="${key}">${config.text}</label><br/>
-                            <input
-                                type="file"
-                                id="${key}"
-                                accept="image/png,image/jpeg,image/webp"/><br/>
-                        </div>\n`;
-
-                    }
-                });
-                formInnerHtml += `
-                <div class="modal-buttons">
-                    <button type="button" id="cancelAddEditBtn" class="btn-cancel">Cancel</button>
-                    <button type="submit" class="btn-save">Save</button>
-                </div>`;
-
-                wishlistForm.innerHTML = "";
-                wishlistForm.innerHTML = formInnerHtml;
-                //console.log(formInnerHtml);
-                // Cancel Add/Edit
-                //cancelAddEditBtn.addEventListener('click', () => hideModal(addEditModal));
-            } */
-
             // Function to populate datalist elements from a Firestore document
             async function populateMenuOptions() {
                 try {
@@ -1270,7 +1191,7 @@
                 Object.keys(data).forEach(key => {
                     
                     if (key !== "timestamp") {
-                        if (dataMap[key].clickToCopy) {
+                        if (dataMap[key] && dataMap[key].clickToCopy) {
                             // console.log("Key: "+key);
                             const clickElement = card.querySelector(`#${key}`);
                             // console.log(clickElement);
@@ -1313,11 +1234,13 @@
                      */
                     return keywordObjs.every(({ word, endsWithSpace }) => {
                         // Regex to detect numeric comparison query like ">550" or "<600"
-                        const numericMatch = word.match(/^([<>])(\d+)$/);
+                        // const numericMatch = word.match(/^([<>])(\d+)$/); //Old Code v_3.0
+                        const numericMatch = word.match(/^([<>])(\d+(\.\d+)?)$/);
                         
                         if (numericMatch) {
                             const operator = numericMatch[1];
                             const numValue = Number(numericMatch[2]);
+                            // console.log ("Query Value: " + numValue); //For Debugging
                             
                             // Check numeric fields for any matching number by operator
                             /* return Object.keys(dataMap).some(key => {
@@ -1343,6 +1266,7 @@
                                     // Check if any extracted number satisfies the condition
                                     return matches.some(numStr => {
                                         const fieldVal = parseFloat(numStr);
+                                        // console.log(fieldVal); //For Debugging
                                         if (operator === '>' && fieldVal > numValue) {
                                             /* console.log(`*********\n data[key]= ${rawVal}\n Match= ${fieldVal}\n*********\n`); //For Debugging */
                                             return true;
