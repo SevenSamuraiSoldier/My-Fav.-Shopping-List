@@ -817,6 +817,7 @@ const dataMap = {
     required: true,
   },
   productUrl: { type: 'link', text: 'Product Link', required: true },
+  productUrl2: { type: 'link', text: 'Product Link 2'},
   type: {
     type: 'datalist',
     text: 'Product Type',
@@ -834,7 +835,12 @@ const dataMap = {
       '-, The Souled Store, Pronk, Nobero, Silly Punter, Wittee, Kadak Merch, Bewakoof,Be Young, Warrior World, The Banyan Tee, Bronoun, Amazon, Myntra, Flipkart',
     clickToCopy: true,
   },
-  mrp: { type: 'input', text: 'Actual Price', dataSuffix: '₹', clickToCopy: true, },
+  mrp: {
+    type: 'input',
+    text: 'Actual Price',
+    dataSuffix: '₹',
+    clickToCopy: true,
+  },
   offerPrice: {
     type: 'input',
     text: 'Offer Price',
